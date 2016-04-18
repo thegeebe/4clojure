@@ -82,3 +82,89 @@
     (list (a i) (b i))
   ))
 )
+
+(comment "Drop every nth item")
+(fn [coll n] (mapcat rest (partition n n [] (cons 0 coll))))
+
+(comment "Factorial")
+(fn [x] (reduce * (range x 0 -1)))
+
+(comment "Reverse interleave")
+(fn [s n] (partition (/ (count s) n) (apply interleave (partition n s))))
+
+(comment "Rotate Sequence")
+#(take (count %2) (nthnext (cycle %2) (mod %1 (count %2))))
+
+(comment "46. Flipping out")
+(fn [f] (fn [x y] (f y x)))
+
+(comment "49. Split-at")
+#(vector (take %1 %2) (drop %1 %2))
+
+(comment "50. Split by type")
+#(vals (group-by type %))
+
+(comment "54. Longest Increasting Sub-seq")
+(defn sub-seq
+  [s]
+  (apply max-key count
+    (cons '()
+      (filter (fn [x] (> (count x) 1))
+        (map reverse (reduce (fn [accum x]
+          (if (or (nil? (ffirst accum))
+            (>= (ffirst accum) x))
+            (cons (list x) accum)
+            (cons (cons x (first accum)) (rest accum))
+          )) '() s)
+        )
+      )
+    )
+  )
+)
+
+(comment "Partition a Sequence")
+(fn [n s]
+  (loop [i (/ (count s) n) se s accum '()]
+    (if (< i 1)
+      (reverse accum)
+      (recur (dec i)
+        (drop n se)
+        (cons (take n se) accum)
+      )
+    )))
+
+(comment "55. Count Occurances")
+#(reduce-kv (fn [m k v] (assoc m k (count v))) {} (group-by identity %))
+
+(comment "56. Get Distinct")
+#(reverse (reduce (fn [accum y]
+  (if-not (some (partial = y) accum)
+    (cons y accum)
+    accum)
+) '() %))
+
+(comment "58. Function Composition")
+(defn comp-cust
+  "compose functions"
+  [& funcs]
+  (fn [& args]
+    (first (reduce (fn [x y] (cons (apply y x) '())) args (reverse funcs)))
+  )
+)
+
+(comment "59. Juxt")
+(defn juxt-cust
+  "juxtapose functions"
+  [& funcs]
+  (fn [& args]
+    (map (fn [f] (apply f args)) funcs)
+  )
+)
+
+; (comment "60. Seq reductions")
+; (defn seq-reduce
+;   ([f coll]
+;   (reduce f coll))
+;   ([f val coll]
+;   (reduce f val coll))
+; )
