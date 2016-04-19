@@ -161,10 +161,39 @@
   )
 )
 
-; (comment "60. Seq reductions")
-; (defn seq-reduce
-;   ([f coll]
-;   (reduce f coll))
-;   ([f val coll]
-;   (reduce f val coll))
-; )
+(defn tester
+  ([seq] (tester 1 seq))
+  ([n seq] (lazy-seq (cons (reduce + (take n seq)) (tester (inc n) seq))))
+)
+
+
+(comment "60. Seq reductions")
+(defn seq-reduce
+  ([f coll] (seq-reduce f nil coll 1))
+  ([f val coll] (seq-reduce f val coll 0))
+  ([f val coll n] (lazy-seq
+    (cons
+      (if (nil? val)
+        (reduce f (take n coll))
+        (reduce f val (take n coll))
+      )
+      (if (nil? (nth coll n nil))
+        '()
+        (seq-reduce f val coll (inc n)))))
+      )
+)
+
+(comment "62. Iterate")
+(fn iter [f x] (lazy-seq (cons x (iter f (f x)))))
+
+(comment "63. Group-by")
+(defn my-group [f x]
+  (reduce-kv (fn [m1 k1 v1] (assoc m1 k1 (reverse v1))) {}
+    (reduce (fn [m v]
+      (update m (f v) conj v)) {} x)))
+
+(comment "4Clojure doesn't have update")
+(fn my-group [f x]
+  (reduce-kv (fn [m1 k1 v1] (assoc m1 k1 (reverse v1))) {}
+    (reduce (fn [m v]
+      (update-in m (vector (f v)) conj v)) {} x)))
